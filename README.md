@@ -5,10 +5,12 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract PolsToken is ERC20 {
     address public owner;
+    ERC20 public degenToken;
 
-    constructor(uint256 initialSupply) ERC20("PolsToken", "Pol") {
+    constructor(uint256 initialSupply, address degenTokenAddress) ERC20("PolsToken", "Pol") {
         owner = msg.sender;
         _mint(msg.sender, initialSupply);
+        degenToken = ERC20(degenTokenAddress);
     }
 
     function mint(address to, uint256 amount) public {
@@ -32,11 +34,11 @@ contract PolsToken is ERC20 {
         // Burn the specified amount of tokens from the sender's balance
         _burn(msg.sender, amount);
 
-        // Redeem logic: here, it can be sending equivalent value in another asset or service
-        // This example doesn't include actual redeem logic for simplicity
-        // You can implement the actual redeeming mechanism as per your requirements
+        // Transfer equivalent DegenTokens to the sender
+        require(degenToken.balanceOf(address(this)) >= amount, "Insufficient DegenToken balance in contract");
+        degenToken.transfer(msg.sender, amount);
 
-        // Set a redeem message (optional)
+        // Emit redeem event
         emit Redeem(msg.sender, amount);
     }
 
